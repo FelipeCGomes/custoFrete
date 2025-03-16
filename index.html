@@ -1,136 +1,385 @@
 <!DOCTYPE html>
 <html lang="pt-br">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cálculo de Frete</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <meta name="description"
+        content="Calculadora de frete online para calcular custos de transporte com base na nota fiscal, peso e outras variáveis. Ideal para empresas de logística.">
+    <meta name="keywords" content="cálculo de frete, transporte, logística, custo de frete, simulação de frete">
+    <meta name="author" content="Seu Nome ou Empresa">
+    <title>Cálculo de Frete - Simule seus Custos de Transporte</title>
+    <link rel="canonical" href="https://www.seusite.com/calculo-de-frete">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.mask/1.14.16/jquery.mask.min.js"></script>
     <style>
+        /* Container principal da calculadora */
         .container {
-            max-width: 600px;
+            max-width: 50%;
             margin: auto;
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
             padding: 20px;
             border-radius: 10px;
             box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
             background-color: white;
+            perspective: 1000px;
+        }
+
+        /* Container do card com efeito flip */
+        .card-container {
+            position: relative;
+            width: 100%;
+            transform-style: preserve-3d;
+            transition: transform 0.6s;
+        }
+
+        /* Configuração dos cards */
+        .card {
+            position: absolute;
+            width: 100%;
+            backface-visibility: hidden;
+            padding: 20px;
+            text-align: center;
+        }
+
+        /* Lado traseiro do card */
+        .card-back {
+            transform: rotateY(180deg);
+        }
+
+        /* Quando a classe flipped for aplicada, o container rotaciona */
+        .flipped {
+            transform: rotateY(180deg);
+        }
+
+        /* Estilização dos botões */
+        .btn-container {
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        /* Notificação de alerta */
+        #notification {
+            margin-bottom: 15px;
+        }
+
+        /* Responsividade */
+        @media (max-width: 768px) {
+            .row {
+                flex-direction: column;
+            }
+
+            .col-md-6 {
+                width: 100%;
+            }
         }
     </style>
 </head>
+
 <body>
     <div class="container">
-        <h2 class="text-center">Cálculo de Frete</h2>
-        <form id="freteForm">
-            <div class="row">
-                <div class="col-md-6">
-                    <div class="mb-3">
-                        <label for="estadoOrigem" class="form-label">Estado de Origem</label>
-                        <select class="form-control" id="estadoOrigem" required></select>
+        <h1 class="text-center">Cálculo de Frete - Simule Seus Custos</h1>
+        <p class="text-center">Calcule rapidamente o valor do frete com base na nota fiscal, peso e taxas adicionais.
+        </p>
+        <div class="card-container" id="cardContainer">
+            <!-- Lado frontal: formulário -->
+            <div class="card" id="frontCard">
+                <!-- Notificação para campos vazios -->
+                <div id="notification"></div>
+                <form id="freteForm">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="estadoOrigem" class="form-label">Estado de Origem</label>
+                                <select class="form-control" id="estadoOrigem" required></select>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="estadoDestino" class="form-label">Estado de Destino</label>
+                                <select class="form-control" id="estadoDestino" required></select>
+                            </div>
+                        </div>
                     </div>
-                    <div class="mb-3">
-                        <label for="cidadeOrigem" class="form-label">Cidade de Origem</label>
-                        <select class="form-control" id="cidadeOrigem" required></select>
+                    <div class="row">
+                        <!-- Coluna Esquerda -->
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="valorNF" class="form-label">Valor da Nota Fiscal (R$)</label>
+                                <input type="text" class="form-control money" id="valorNF" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="pesoCTE" class="form-label">Peso do CTE (kg)</label>
+                                <input type="text" class="form-control weight" id="pesoCTE" placeholder="00.000 kg"
+                                    required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="seguro" class="form-label">Seguro (%)</label>
+                                <input type="text" class="form-control percentage" id="seguro" placeholder="0,00%">
+                            </div>
+                        </div>
+                        <!-- Coluna Direita -->
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="valorCTE" class="form-label">Valor do CTE (R$)</label>
+                                <input type="text" class="form-control money" id="valorCTE" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="descargaTonelada" class="form-label">Valor da Descarga por Tonelada
+                                    (R$)</label>
+                                <input type="text" class="form-control money" id="descargaTonelada"
+                                    placeholder="Opcional">
+                            </div>
+                            <div class="mb-3">
+                                <label for="descargaVeiculo" class="form-label">Valor da Descarga por Veículo
+                                    (R$)</label>
+                                <input type="text" class="form-control money" id="descargaVeiculo"
+                                    placeholder="Opcional">
+                            </div>
+                        </div>
                     </div>
-                    <div class="mb-3">
-                        <label for="valorNF" class="form-label">Valor da Nota Fiscal (R$)</label>
-                        <input type="number" class="form-control" id="valorNF" required>
+                    <div class="btn-container">
+                        <button type="button" class="btn btn-primary" onclick="calcularFrete()">Calcular Frete</button>
                     </div>
-                    <div class="mb-3">
-                        <label for="pesoCTE" class="form-label">Peso do CTE (kg)</label>
-                        <input type="number" class="form-control" id="pesoCTE" required>
-                    </div>
-                    <div class="mb-3">
-                        <label for="seguro" class="form-label">Seguro (%)</label>
-                        <input type="number" class="form-control" id="seguro">
-                    </div>
-                    <div class="mb-3">
-                        <label for="gris" class="form-label">GRIS (%)</label>
-                        <input type="number" class="form-control" id="gris">
-                    </div>
-                </div>
-                <div class="col-md-6">
-                    <div class="mb-3">
-                        <label for="estadoDestino" class="form-label">Estado de Destino</label>
-                        <select class="form-control" id="estadoDestino" required></select>
-                    </div>
-                    <div class="mb-3">
-                        <label for="cidadeDestino" class="form-label">Cidade de Destino</label>
-                        <select class="form-control" id="cidadeDestino" required></select>
-                    </div>
-                    <div class="mb-3">
-                        <label for="valorCTE" class="form-label">Valor do CTE (R$)</label>
-                        <input type="number" class="form-control" id="valorCTE" required>
-                    </div>
-                    <div class="mb-3">
-                        <label for="custoDescargaTon" class="form-label">Custo Descarga (R$/tonelada)</label>
-                        <input type="number" class="form-control" id="custoDescargaTon">
-                    </div>
-                    <div class="mb-3">
-                        <label for="custoDescargaVeiculo" class="form-label">Custo Descarga por Veículo (R$)</label>
-                        <input type="number" class="form-control" id="custoDescargaVeiculo">
-                    </div>
-                    <div class="mb-3">
-                        <label for="transportadora" class="form-label">Nome da Transportadora</label>
-                        <input type="text" class="form-control" id="transportadora">
-                    </div>
-                </div>
+                </form>
             </div>
-            <button type="button" class="btn btn-primary w-100" onclick="calcularFrete()">Calcular</button>
-        </form>
-
-        <div class="mt-4" id="resultado" style="display: none;">
-            <h4>Resultado</h4>
-            <p><strong>R$/tonelada:</strong> <span id="resultadoTon"></span></p>
-            <p><strong>% do Frete:</strong> <span id="resultadoFrete"></span></p>
-            <p><strong>Valor do Seguro:</strong> <span id="resultadoSeguro"></span></p>
-            <p><strong>Valor da Descarga:</strong> <span id="resultadoDescarga"></span></p>
+            <!-- Lado traseiro: resultados -->
+            <div class="card card-back" id="backCard">
+                <!-- Conteúdo dos resultados inserido via JavaScript -->
+            </div>
         </div>
     </div>
 
     <script>
-        function carregarEstados() {
-            fetch('https://servicodados.ibge.gov.br/api/v1/localidades/estados?orderBy=nome')
-                .then(response => response.json())
-                .then(estados => {
-                    const estadoOrigemSelect = document.getElementById('estadoOrigem');
-                    const estadoDestinoSelect = document.getElementById('estadoDestino');
-                    estados.forEach(estado => {
-                        const option = document.createElement('option');
-                        option.value = estado.id;
-                        option.textContent = estado.nome;
-                        estadoOrigemSelect.appendChild(option.cloneNode(true));
-                        estadoDestinoSelect.appendChild(option);
-                    });
+        // Função para carregar os estados via API do IBGE
+        async function carregarEstados() {
+            try {
+                let response = await fetch('https://servicodados.ibge.gov.br/api/v1/localidades/estados?orderBy=nome');
+                let estados = await response.json();
+                let estadoOrigemSelect = document.getElementById('estadoOrigem');
+                let estadoDestinoSelect = document.getElementById('estadoDestino');
+                estados.forEach(estado => {
+                    let optionOrigem = new Option(estado.nome, estado.sigla);
+                    let optionDestino = new Option(estado.nome, estado.sigla);
+                    estadoOrigemSelect.appendChild(optionOrigem);
+                    estadoDestinoSelect.appendChild(optionDestino);
                 });
+            } catch (error) {
+                console.error("Erro ao carregar estados:", error);
+            }
         }
 
-        function carregarCidades(estadoId, cidadeSelectId) {
-            fetch(`https://servicodados.ibge.gov.br/api/v1/localidades/estados/${estadoId}/municipios?orderBy=nome`)
-                .then(response => response.json())
-                .then(cidades => {
-                    const cidadeSelect = document.getElementById(cidadeSelectId);
-                    cidadeSelect.innerHTML = '<option value="">Selecione a cidade</option>';
-                    cidades.forEach(cidade => {
-                        const option = document.createElement('option');
-                        option.value = cidade.nome;
-                        option.textContent = cidade.nome;
-                        cidadeSelect.appendChild(option);
-                    });
-                });
+        // Função para exibir notificações de alerta
+        function showNotification(message) {
+            let notificationDiv = document.getElementById('notification');
+            notificationDiv.innerHTML = `<div class="alert alert-danger" role="alert">${message}</div>`;
+            setTimeout(() => {
+                notificationDiv.innerHTML = "";
+            }, 3000);
         }
 
-        document.getElementById('estadoOrigem').addEventListener('change', function() {
-            carregarCidades(this.value, 'cidadeOrigem');
-        });
+        // Função para converter string formatada para número (ex.: "1.234,56" -> 1234.56)
+        function parseMoney(value) {
+            if (!value) return 0;
+            return parseFloat(value.replace(/\./g, '').replace(',', '.'));
+        }
 
-        document.getElementById('estadoDestino').addEventListener('change', function() {
-            carregarCidades(this.value, 'cidadeDestino');
-        });
+        // Função para converter string de porcentagem (ex.: "5,00%" -> 5)
+        function parsePercentage(value) {
+            if (!value) return 0;
+            return parseFloat(value.replace('%', '').replace(',', '.'));
+        }
 
-        document.addEventListener('DOMContentLoaded', carregarEstados);
+        // Função para converter o peso (ex.: "15.000" -> 15000)
+        function parseWeight(value) {
+            if (!value) return 0;
+            return parseFloat(value.replace('.', ''));
+        }
+
+        // Função para determinar o tipo de veículo com base no peso (em kg)
+        function determinarVeiculo(peso) {
+            if (peso <= 1200) return "VUC";
+            else if (peso <= 5000) return "3/4";
+            else if (peso <= 8000) return "Toco";
+            else if (peso <= 14000) return "Truck";
+            else if (peso <= 18000) return "Bi-Truck";
+            else return "Carreta";
+        }
+
+        // Função para obter a cotação do diesel comum e diesel S10
+        async function getDieselPrices() {
+            try {
+                // Exemplo de chamada a uma API gratuita (substitua por uma real se disponível)
+                // let response = await fetch("https://api.exemplo.com/diesel");
+                // let data = await response.json();
+                // return data;
+                // Para demonstração, retornamos valores fixos simulados:
+                return {
+                    diesel_comum: 5.80,  // exemplo: R$ 5,80 por litro
+                    diesel_s10: 6.20     // exemplo: R$ 6,20 por litro
+                };
+            } catch (error) {
+                console.error("Erro ao obter cotação do diesel:", error);
+                return { diesel_comum: 0, diesel_s10: 0 };
+            }
+        }
+
+        // Calcula os custos do frete e exibe os resultados
+        async function calcularFrete() {
+            // Validação dos campos obrigatórios
+            const requiredFields = [
+                { id: 'estadoOrigem', name: 'Estado de Origem' },
+                { id: 'estadoDestino', name: 'Estado de Destino' },
+                { id: 'valorNF', name: 'Valor da Nota Fiscal' },
+                { id: 'pesoCTE', name: 'Peso do CTE' },
+                { id: 'valorCTE', name: 'Valor do CTE' }
+            ];
+            for (let field of requiredFields) {
+                let element = document.getElementById(field.id);
+                if (!element.value || element.value.trim() === "") {
+                    showNotification(`Por favor, preencha o campo "${field.name}".`);
+                    return;
+                }
+            }
+
+            // Obtém os valores dos inputs (assumindo zero para os opcionais)
+            let valorNF = parseMoney(document.getElementById('valorNF').value);
+            let valorCTE = parseMoney(document.getElementById('valorCTE').value);
+            let pesoCTE = parseWeight(document.getElementById('pesoCTE').value);
+            let seguro = parsePercentage(document.getElementById('seguro').value);
+            let descargaTonelada = parseMoney(document.getElementById('descargaTonelada').value);
+            let descargaVeiculo = parseMoney(document.getElementById('descargaVeiculo').value);
+            let estadoOrigem = document.getElementById('estadoOrigem').value;
+            let estadoDestino = document.getElementById('estadoDestino').value;
+
+            if (pesoCTE <= 0 || valorNF <= 0 || valorCTE <= 0) {
+                showNotification("Por favor, insira valores numéricos válidos para os campos obrigatórios.");
+                return;
+            }
+
+            // ICMS fixo de 7%
+            const icmsRate = 0.07;
+            let icmsValor = valorCTE * icmsRate;
+
+            // Custo do seguro
+            let custoSeguro = valorNF * (seguro / 100);
+
+            // Custo de descarga total: (peso em toneladas * descarga por tonelada) + descarga por veículo
+            let pesoEmToneladas = pesoCTE / 1000;
+            let custoDescargaTotal = (pesoEmToneladas * descargaTonelada) + descargaVeiculo;
+
+            // Custo Total é o valor do frete
+            let custoTotal = valorCTE;
+
+            // Custo Percentual por NF: percentual que o custo total representa em relação ao valor da NF
+            let custoPercentualPorNF = (valorCTE / valorNF) * 100;
+
+            // Custo Frete por Tonelada e por Quilo
+            let custoFretePorTonelada = valorCTE / pesoEmToneladas;
+            let custoFretePorQuilo = valorCTE / pesoCTE;
+
+            // Consulta de distância entre origem e destino usando API gratuita Distance24
+            const capitalMapping = {
+                "AC": "Rio Branco",
+                "AL": "Maceió",
+                "AP": "Macapá",
+                "AM": "Manaus",
+                "BA": "Salvador",
+                "CE": "Fortaleza",
+                "DF": "Brasília",
+                "ES": "Vitória",
+                "GO": "Goiânia",
+                "MA": "São Luís",
+                "MT": "Cuiabá",
+                "MS": "Campo Grande",
+                "MG": "Belo Horizonte",
+                "PA": "Belém",
+                "PB": "João Pessoa",
+                "PR": "Curitiba",
+                "PE": "Recife",
+                "PI": "Teresina",
+                "RJ": "Rio de Janeiro",
+                "RN": "Natal",
+                "RS": "Porto Alegre",
+                "RO": "Porto Velho",
+                "RR": "Boa Vista",
+                "SC": "Florianópolis",
+                "SP": "São Paulo",
+                "SE": "Aracaju",
+                "TO": "Palmas"
+            };
+            let originCapital = capitalMapping[estadoOrigem] || estadoOrigem;
+            let destinationCapital = capitalMapping[estadoDestino] || estadoDestino;
+            let distance = "";
+            try {
+                let url = "https://www.distance24.org/route.json?stops="
+                    + encodeURIComponent(originCapital + ", Brazil") + "|"
+                    + encodeURIComponent(destinationCapital + ", Brazil");
+                let response = await fetch(url);
+                if (response.ok) {
+                    let data = await response.json();
+                    if (data && typeof data.distance !== 'undefined' && data.distance !== null) {
+                        distance = data.distance;
+                    }
+                }
+            } catch (e) {
+                console.error("Erro ao obter a distância:", e);
+            }
+
+            // Obtém a cotação do diesel
+            let dieselPrices = await getDieselPrices();
+
+            // Função para formatar valores monetários para o padrão BRL
+            const formatBRL = (value) => {
+                return value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+            };
+
+            // Monta o HTML dos resultados divididos em duas colunas
+            let resultadoHTML = `
+        <h3>Resultados do Cálculo:</h3>
+        <div class="row">
+          <div class="col-md-6">
+            <p><strong>ICMS aplicado:</strong> ${(icmsRate * 100).toFixed(2)}%</p>
+            <p><strong>Valor do ICMS:</strong> ${formatBRL(icmsValor)}</p>
+            <p><strong>Custo do Seguro:</strong> ${formatBRL(custoSeguro)}</p>
+            <p><strong>Custo de Descarga Total:</strong> ${formatBRL(custoDescargaTotal)}</p>
+            <p><strong>Custo Total:</strong> ${formatBRL(custoTotal)}</p>
+            <p><strong>Custo Percentual por NF:</strong> ${custoPercentualPorNF.toFixed(2)}%</p>
+          </div>
+          <div class="col-md-6">
+            <p><strong>Custo Frete por Tonelada:</strong> ${formatBRL(custoFretePorTonelada)}</p>
+            <p><strong>Custo Frete por Quilo:</strong> ${formatBRL(custoFretePorQuilo)}</p>
+            ${distance ? `<p><strong>Distância entre origem e destino:</strong> ${distance} km</p>` : ""}
+            <p><strong>Cotação Diesel Comum:</strong> ${formatBRL(dieselPrices.diesel_comum)}</p>
+            <p><strong>Cotação Diesel S10:</strong> ${formatBRL(dieselPrices.diesel_s10)}</p>
+            <p><strong>Tipo de Veículo Sugerido:</strong> ${determinarVeiculo(pesoCTE)}</p>
+          </div>
+        </div>
+        <div class="btn-container">
+          <button type="button" class="btn btn-secondary" onclick="recalcular()">Recalcular</button>
+        </div>
+      `;
+
+            // Insere os resultados no card traseiro e ativa o efeito flip
+            document.getElementById('backCard').innerHTML = resultadoHTML;
+            document.getElementById('cardContainer').classList.add('flipped');
+        }
+
+        // Função para voltar ao formulário (remove o flip e reseta o formulário)
+        function recalcular() {
+            document.getElementById('freteForm').reset();
+            document.getElementById('cardContainer').classList.remove('flipped');
+        }
+
+        // Aplica as máscaras e carrega os estados ao iniciar
+        $(document).ready(function () {
+            $('.money').mask('000.000.000,00', { reverse: true });
+            $('.weight').mask('00.000', { reverse: true });
+            $('.percentage').mask('0,00%', { reverse: true });
+            carregarEstados();
+        });
     </script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
+
 </html>
