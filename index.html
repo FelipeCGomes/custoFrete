@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description"
+        content="Calculadora de frete online para calcular custos de transporte com base na nota fiscal, peso e outras variáveis. Ideal para empresas de logística.">
+    <meta name="keywords"
+        content="cálculo de frete, transporte, logística, custo de frete, simulação de frete, frete online, frete por peso, frete por percentual de nota fiscal">
+    <meta name="robots" content="index, follow">
+    <meta name="author" content="Felipe Gomes">
+    <title>Cálculo de Frete - Simule seus Custos de Transporte</title>
+    <link rel="canonical" href="https://felipecgomes.github.io/custoFrete/">
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <!-- FontAwesome para os ícones -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="css/styles.css">
+    <!-- jQuery e jQuery Mask -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.mask/1.14.16/jquery.mask.min.js"></script>
+</head>
+
+<body>
+    <div class="container">
+        <h1 class="text-center">Cálculo de Frete - Simule Seus Custos</h1>
+        <p class="text-center">Calcule rapidamente o valor do frete com base na nota fiscal, peso, atividade e taxas
+            adicionais.</p>
+        <div class="card-container" id="cardContainer">
+            <!-- Lado frontal: formulário -->
+            <div class="card" id="frontCard">
+                <!-- Notificação para campos vazios -->
+                <div id="notification"></div>
+                <form id="freteForm">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="estadoOrigem" class="form-label">Estado de Origem</label>
+                                <select class="form-control" id="estadoOrigem" required></select>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="estadoDestino" class="form-label">Estado de Destino</label>
+                                <select class="form-control" id="estadoDestino" required></select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <!-- Coluna Esquerda -->
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="valorNF" class="form-label">Valor da Nota Fiscal (R$)</label>
+                                <input type="text" class="form-control money" id="valorNF" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="pesoCTE" class="form-label">Peso do CTE (kg)</label>
+                                <input type="text" class="form-control weight" id="pesoCTE" placeholder="00.000 kg"
+                                    required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="seguro" class="form-label">Seguro (%)</label>
+                                <input type="text" class="form-control percentage" id="seguro" placeholder="0,00%">
+                            </div>
+                            <!-- Novo campo: Atividade -->
+                            <div class="mb-3">
+                                <label for="atividade" class="form-label">Atividade</label>
+                                <select class="form-control" id="atividade" required>
+                                    <option value="Transporte de Cargas" selected>Transporte de Cargas</option>
+                                    <option value="Transporte de Passageiros">Transporte de Passageiros</option>
+                                    <option value="Energia Elétrica">Energia Elétrica</option>
+                                    <option value="Combustíveis">Combustíveis</option>
+                                    <option value="Telecomunicações">Telecomunicações</option>
+                                    <option value="Outros">Outros</option>
+                                </select>
+                            </div>
+                        </div>
+                        <!-- Coluna Direita -->
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="valorCTE" class="form-label">Valor do CTE (R$)</label>
+                                <input type="text" class="form-control money" id="valorCTE" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="descargaTonelada" class="form-label">Valor da Descarga por Tonelada
+                                    (R$)</label>
+                                <input type="text" class="form-control money" id="descargaTonelada"
+                                    placeholder="Opcional">
+                            </div>
+                            <div class="mb-3">
+                                <label for="descargaVeiculo" class="form-label">Valor da Descarga por Veículo
+                                    (R$)</label>
+                                <input type="text" class="form-control money" id="descargaVeiculo"
+                                    placeholder="Opcional">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="btn-container">
+                        <button type="button" class="btn btn-primary" onclick="calcularFrete()">Calcular Frete</button>
+                    </div>
+                </form>
+            </div>
+            <!-- Lado traseiro: resultados -->
+            <div class="card card-back" id="backCard">
+                <!-- Conteúdo dos resultados inserido via JavaScript -->
+            </div>
+        </div>
+    </div>
+    <!-- Bootstrap Bundle JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Custom JS -->
+    <script src="js/main.js"></script>
+</body>
+
+</html>
